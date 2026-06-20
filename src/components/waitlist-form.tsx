@@ -133,7 +133,7 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
           <div className="space-y-2">
             <Label className="text-xs font-medium text-white/50">Interested in</Label>
             <Select onValueChange={(v) => setValue('module', v)}>
-              <SelectTrigger className={`h-12 bg-white/[0.06] border-white/[0.1] text-white rounded-xl focus:border-orange-500/50 focus:ring-orange-500/15 transition-colors duration-200`}>
+              <SelectTrigger className={`h-12 bg-white/6 border-white/10 text-white rounded-xl focus:border-orange-500/50 focus:ring-orange-500/15 transition-colors duration-200`}>
                 <SelectValue placeholder="Select module" />
               </SelectTrigger>
               <SelectContent>
@@ -166,10 +166,10 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
 
   /* -- Section variant ----------------------------------------------- */
   return (
-    <div className={`w-full max-w-2xl ${className}`}>
+    <div className={`w-full max-w-2xl mx-auto ${className}`}>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="rounded-3xl bg-white/[0.05] backdrop-blur-sm border border-white/[0.08] p-7 sm:p-10 space-y-4"
+        className="rounded-3xl bg-white/5 backdrop-blur-sm border border-white/8 p-7 sm:p-10 space-y-4"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -204,7 +204,7 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
           <div className="space-y-2">
             <Label className="text-white/50 text-sm font-medium">Interested in</Label>
             <Select onValueChange={(v) => setValue('module', v)}>
-              <SelectTrigger className={`h-12 bg-white/[0.06] border-white/[0.1] text-white rounded-xl focus:border-orange-500/50 focus:ring-orange-500/15 transition-colors duration-200`} style={{ minHeight: 44 }}>
+              <SelectTrigger className={`h-12 bg-white/6 border-white/10 text-white rounded-xl focus:border-orange-500/50 focus:ring-orange-500/15 transition-colors duration-200`} style={{ minHeight: 44 }}>
                 <SelectValue placeholder="Select module" />
               </SelectTrigger>
               <SelectContent>
@@ -220,7 +220,7 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl cursor-pointer shadow-lg shadow-orange-700/20 transition-all duration-200 active:scale-[0.98] min-h-[48px] px-8"
+          className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl cursor-pointer shadow-lg shadow-orange-700/20 transition-all duration-200 active:scale-[0.98] min-h-12 px-8"
         >
           {isSubmitting ? (
             <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Joining...</>
