@@ -1,7 +1,5 @@
 import nodemailer from 'nodemailer';
 
-const DEFAULT_TO = 'host@datrixtechsolutions.com';
-
 function requiredEnv(name: string) {
     const value = process.env[name];
 
@@ -38,11 +36,9 @@ export async function sendWaitlistNotification(payload: {
             },
         });
 
-        const toEmail = process.env.WAITLIST_TO_EMAIL || DEFAULT_TO;
-
         await transport.sendMail({
-            from: process.env.SMTP_FROM || 'Workphelo <host@datrixtechsolutions.com>',
-            to: toEmail,
+            from: requiredEnv('SMTP_FROM'),
+            to: requiredEnv('WAITLIST_TO_EMAIL'),
             subject: 'New waitlist signup from Workphelo',
             html: `
         <h2>New Waitlist Signup</h2>
