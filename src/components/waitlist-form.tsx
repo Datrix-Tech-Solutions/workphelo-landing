@@ -1,31 +1,158 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod/v4';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Loader2, CheckCircle2, User, Mail, Building2, ArrowRight } from 'lucide-react';
+import { Loader2, CheckCircle2, User, Mail, Building2, ArrowRight, ChevronDown, Check } from 'lucide-react';
 import { toast } from 'sonner';
+
+const MODULES = [
+  { value: 'hr', label: 'HR Management' },
+  { value: 'accounting', label: 'Accounting' },
+  { value: 'marketing', label: 'Marketing' },
+  { value: 'operations', label: 'Operations' },
+  { value: 'all', label: 'All Modules' },
+];
 
 const waitlistFormSchema = z.object({
   fullName: z.string().min(2, 'Full name is required'),
   email: z.email('Please enter a valid email'),
   company: z.string().optional(),
-  module: z.string().optional(),
+  module: z.array(z.string()).optional(),
   website: z.string().optional(),
 });
 
 type WaitlistFormValues = z.infer<typeof waitlistFormSchema>;
+
+interface MultiSelectProps {
+  selected: string[];
+  onChange: (values: string[]) => void;
+  triggerClassName: string;
+}
+
+function MultiSelect({ selected, onChange, triggerClassName }: MultiSelectProps) {
+  const [open, setOpen] = useState(false);
+  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const updateRect = useCallback(() => {
+    if (triggerRef.current) {
+      const r = triggerRef.current.getBoundingClientRect();
+      setRect({ top: r.bottom + 6, left: r.left, width: r.width });
+    }
+  }, []);
+
+  function handleToggle() {
+    updateRect();
+    setOpen((o) => !o);
+  }
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as Node;
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(target) &&
+        triggerRef.current && !triggerRef.current.contains(target)
+      ) {
+        setOpen(false);
+      }
+    }
+    function handleScroll() { if (open) updateRect(); }
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleScroll);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [open, updateRect]);
+
+  function toggle(value: string) {
+    if (selected.includes(value)) {
+      onChange(selected.filter((v) => v !== value));
+    } else {
+      onChange([...selected, value]);
+    }
+  }
+
+  const displayText =
+    selected.length === 0
+      ? 'Select modules'
+      : selected.length === MODULES.length
+      ? 'All Modules'
+      : selected.map((v) => MODULES.find((m) => m.value === v)?.label).join(', ');
+
+  const dropdown =
+    open && typeof document !== 'undefined' && rect
+      ? createPortal(
+          <div
+            ref={dropdownRef}
+            style={{
+              position: 'fixed',
+              top: rect.top,
+              left: rect.left,
+              width: rect.width,
+              zIndex: 9999,
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              background: 'rgba(15, 20, 40, 0.55)',
+              borderRadius: '0.75rem',
+              border: '1px solid rgba(255,255,255,0.12)',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+              overflow: 'hidden',
+            }}
+          >
+            {MODULES.map((mod) => {
+              const checked = selected.includes(mod.value);
+              return (
+                <button
+                  key={mod.value}
+                  type="button"
+                  onClick={() => toggle(mod.value)}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-white/90 hover:bg-white/10 transition-colors duration-150"
+                >
+                  <span
+                    className={`h-4 w-4 shrink-0 rounded border flex items-center justify-center transition-colors duration-150 ${
+                      checked ? 'bg-orange-500 border-orange-500' : 'border-white/20 bg-transparent'
+                    }`}
+                  >
+                    {checked && <Check className="h-3 w-3 text-white" strokeWidth={3} />}
+                  </span>
+                  {mod.label}
+                </button>
+              );
+            })}
+          </div>,
+          document.body
+        )
+      : null;
+
+  return (
+    <div className="relative w-full">
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={handleToggle}
+        className={`${triggerClassName} flex items-center justify-between w-full px-3`}
+      >
+        <span className={`truncate text-sm ${selected.length === 0 ? 'text-white/25' : 'text-white'}`}>
+          {displayText}
+        </span>
+        <ChevronDown
+          className={`h-4 w-4 text-white/30 shrink-0 ml-2 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {dropdown}
+    </div>
+  );
+}
 
 interface WaitlistFormProps {
   variant?: 'hero' | 'section';
@@ -35,6 +162,7 @@ interface WaitlistFormProps {
 export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [selectedModules, setSelectedModules] = useState<string[]>([]);
 
   const {
     register,
@@ -44,8 +172,13 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
     formState: { errors },
   } = useForm<WaitlistFormValues>({
     resolver: zodResolver(waitlistFormSchema),
-    defaultValues: { fullName: '', email: '', company: '', module: '', website: '' },
+    defaultValues: { fullName: '', email: '', company: '', module: [], website: '' },
   });
+
+  function handleModuleChange(values: string[]) {
+    setSelectedModules(values);
+    setValue('module', values);
+  }
 
   const onSubmit = async (data: WaitlistFormValues) => {
     setIsSubmitting(true);
@@ -53,7 +186,7 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, module: data.module?.join(', ') }),
       });
       const result = await res.json();
 
@@ -65,6 +198,7 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
       toast.success('Welcome aboard! You are on the waitlist.');
       setIsSuccess(true);
       reset();
+      setSelectedModules([]);
     } catch {
       toast.error('Network error. Please try again.');
     } finally {
@@ -72,9 +206,15 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
     }
   };
 
-  /* -- Shared input classes ------------------------------------------ */
-  const heroInput = 'h-12 bg-white/[0.06] border-white/[0.1] text-white placeholder:text-white/25 rounded-xl focus:border-orange-500/50 focus:ring-orange-500/15 pl-11 transition-colors duration-200';
-  const sectionInput = 'h-12 bg-white/[0.06] border-white/[0.1] text-white placeholder:text-white/25 rounded-xl focus:border-orange-500/50 focus:ring-orange-500/15 pl-11 transition-colors duration-200';
+  const heroTrigger =
+    'h-12 bg-white/[0.06] border border-white/[0.1] text-white rounded-xl focus:border-orange-500/50 focus:ring-orange-500/15 transition-colors duration-200';
+  const sectionTrigger =
+    'h-12 bg-white/[0.06] border border-white/[0.1] text-white rounded-xl focus:border-orange-500/50 focus:ring-orange-500/15 transition-colors duration-200';
+
+  const heroInput =
+    'h-12 bg-white/[0.06] border-white/[0.1] text-white placeholder:text-white/25 rounded-xl focus:border-orange-500/50 focus:ring-orange-500/15 pl-11 transition-colors duration-200';
+  const sectionInput =
+    'h-12 bg-white/[0.06] border-white/[0.1] text-white placeholder:text-white/25 rounded-xl focus:border-orange-500/50 focus:ring-orange-500/15 pl-11 transition-colors duration-200';
 
   if (isSuccess) {
     return (
@@ -142,18 +282,11 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
           </div>
           <div className="space-y-2">
             <Label className="text-xs font-medium text-white/50">Interested in</Label>
-            <Select onValueChange={(v) => setValue('module', v)}>
-              <SelectTrigger className={`h-12 bg-white/[0.06] border-white/[0.1] text-white rounded-xl focus:border-orange-500/50 focus:ring-orange-500/15 transition-colors duration-200`}>
-                <SelectValue placeholder="Select module" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="hr">HR Management</SelectItem>
-                <SelectItem value="accounting">Accounting</SelectItem>
-                <SelectItem value="marketing">Marketing</SelectItem>
-                <SelectItem value="operations">Operations</SelectItem>
-                <SelectItem value="all">All Modules</SelectItem>
-              </SelectContent>
-            </Select>
+            <MultiSelect
+              selected={selectedModules}
+              onChange={handleModuleChange}
+              triggerClassName={heroTrigger}
+            />
           </div>
         </div>
         <Button
@@ -176,10 +309,10 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
 
   /* -- Section variant ----------------------------------------------- */
   return (
-    <div className={`w-full max-w-2xl ${className}`}>
+    <div className={`w-full max-w-2xl mx-auto ${className}`}>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="rounded-3xl bg-white/[0.05] backdrop-blur-sm border border-white/[0.08] p-7 sm:p-10 space-y-4"
+        className="rounded-3xl bg-white/5 backdrop-blur-sm border border-white/8 p-7 sm:p-10 space-y-4"
       >
         <div className="hidden" aria-hidden="true">
           <Label htmlFor="sec-website">Website</Label>
@@ -222,24 +355,17 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
           </div>
           <div className="space-y-2">
             <Label className="text-white/50 text-sm font-medium">Interested in</Label>
-            <Select onValueChange={(v) => setValue('module', v)}>
-              <SelectTrigger className={`h-12 bg-white/[0.06] border-white/[0.1] text-white rounded-xl focus:border-orange-500/50 focus:ring-orange-500/15 transition-colors duration-200`} style={{ minHeight: 44 }}>
-                <SelectValue placeholder="Select module" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="hr">HR Management</SelectItem>
-                <SelectItem value="accounting">Accounting</SelectItem>
-                <SelectItem value="marketing">Marketing</SelectItem>
-                <SelectItem value="operations">Operations</SelectItem>
-                <SelectItem value="all">All Modules</SelectItem>
-              </SelectContent>
-            </Select>
+            <MultiSelect
+              selected={selectedModules}
+              onChange={handleModuleChange}
+              triggerClassName={sectionTrigger}
+            />
           </div>
         </div>
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl cursor-pointer shadow-lg shadow-orange-700/20 transition-all duration-200 active:scale-[0.98] min-h-[48px] px-8"
+          className="w-full sm:w-auto bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl cursor-pointer shadow-lg shadow-orange-700/20 transition-all duration-200 active:scale-[0.98] min-h-12 px-8"
         >
           {isSubmitting ? (
             <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Joining...</>
