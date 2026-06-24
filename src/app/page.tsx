@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { motion, useScroll, useTransform, AnimatePresence, useMotionValueEvent } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence, useMotionValueEvent, type Variants } from 'framer-motion';
 import {
   Users,
   Calculator,
@@ -246,7 +246,7 @@ function StaggerReveal({
 }: {
   children: React.ReactNode;
   className?: string;
-  variant?: typeof stagger;
+  variant?: Variants;
 }) {
   return (
     <motion.div
@@ -269,7 +269,7 @@ function StaggerItem({
 }: {
   children: React.ReactNode;
   className?: string;
-  variants?: typeof fadeUp;
+  variants?: Variants;
 }) {
   return (
     <motion.div variants={variants} transition={smoothSpring} className={className}>
