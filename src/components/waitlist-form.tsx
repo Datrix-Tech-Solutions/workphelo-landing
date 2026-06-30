@@ -23,8 +23,9 @@ const waitlistFormSchema = z.object({
   fullName: z.string().min(2, 'Full name is required'),
   email: z.email('Please enter a valid email'),
   phone: z.string().min(1, 'Phone number is required'),
-  company: z.string().min(1, 'Company is required'),
+  company: z.string().optional(),
   module: z.array(z.string()).min(1, 'Please select at least one module'),
+  website: z.string().optional(),
 });
 
 type WaitlistFormValues = z.infer<typeof waitlistFormSchema>;
@@ -172,7 +173,7 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
     formState: { errors },
   } = useForm<WaitlistFormValues>({
     resolver: zodResolver(waitlistFormSchema),
-    defaultValues: { fullName: '', email: '', phone: '', company: '', module: [] },
+    defaultValues: { fullName: '', email: '', phone: '', company: '', module: [], website: '' },
   });
 
   function handleModuleChange(values: string[]) {
@@ -241,6 +242,15 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
   if (variant === 'hero') {
     return (
       <form onSubmit={handleSubmit(onSubmit)} className={`w-full max-w-lg space-y-3.5 ${className}`}>
+        <div className="hidden" aria-hidden="true">
+          <Label htmlFor="hero-website">Website</Label>
+          <Input
+            id="hero-website"
+            tabIndex={-1}
+            autoComplete="off"
+            {...register('website')}
+          />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div className="space-y-2">
             <Label htmlFor="hero-name" className="text-xs font-medium text-white/50">
@@ -321,6 +331,15 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
         onSubmit={handleSubmit(onSubmit)}
         className="rounded-3xl bg-white/5 backdrop-blur-sm border border-white/8 p-7 sm:p-10 space-y-4"
       >
+        <div className="hidden" aria-hidden="true">
+          <Label htmlFor="sec-website">Website</Label>
+          <Input
+            id="sec-website"
+            tabIndex={-1}
+            autoComplete="off"
+            {...register('website')}
+          />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="sec-name" className="text-white/50 text-sm font-medium">

@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
+const siteUrl = new URL("https://www.workphelo.com");
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -14,9 +16,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: siteUrl,
   title: "Workphelo ERP — One Platform. One Login. Complete Business Visibility.",
   description:
     "Workphelo unifies HR, Marketing, Sales, Accounting, Operations, Fleet Management, and Executive Reporting into one intelligent platform built for African businesses. Join the waitlist.",
+  alternates: {
+    canonical: "/",
+  },
   keywords: [
     "Workphelo",
     "ERP",
@@ -32,16 +38,22 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Datrix Tech Solutions" }],
   openGraph: {
-    title: "Workphelo ERP — One Platform. Complete Business Visibility.",
+    title: "Workphelo ERP — One Platform. One Login. Complete Business Visibility.",
     description:
       "The all-in-one ERP platform built for African businesses. HR, Accounting, Marketing, Operations — unified.",
+    url: siteUrl,
     type: "website",
+    siteName: "Workphelo",
   },
   twitter: {
     card: "summary_large_image",
     title: "Workphelo ERP",
     description:
       "The all-in-one ERP platform built for African businesses.",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
