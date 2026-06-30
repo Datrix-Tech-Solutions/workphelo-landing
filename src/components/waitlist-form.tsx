@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, CheckCircle2, User, Mail, Building2, ArrowRight, ChevronDown, Check } from 'lucide-react';
+import { Loader2, CheckCircle2, User, Mail, Building2, Phone, ArrowRight, ChevronDown, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MODULES = [
@@ -22,8 +22,9 @@ const MODULES = [
 const waitlistFormSchema = z.object({
   fullName: z.string().min(2, 'Full name is required'),
   email: z.email('Please enter a valid email'),
-  company: z.string().optional(),
-  module: z.array(z.string()).optional(),
+  phone: z.string().min(1, 'Phone number is required'),
+  company: z.string().min(1, 'Company is required'),
+  module: z.array(z.string()).min(1, 'Please select at least one module'),
 });
 
 type WaitlistFormValues = z.infer<typeof waitlistFormSchema>;
@@ -171,7 +172,7 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
     formState: { errors },
   } = useForm<WaitlistFormValues>({
     resolver: zodResolver(waitlistFormSchema),
-    defaultValues: { fullName: '', email: '', company: '', module: [] },
+    defaultValues: { fullName: '', email: '', phone: '', company: '', module: [] },
   });
 
   function handleModuleChange(values: string[]) {
@@ -264,20 +265,36 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div className="space-y-2">
-            <Label htmlFor="hero-company" className="text-xs font-medium text-white/50">Company</Label>
+            <Label htmlFor="hero-phone" className="text-xs font-medium text-white/50">
+              Phone Number <span className="text-orange-400/80">*</span>
+            </Label>
+            <div className="relative">
+              <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20" />
+              <Input id="hero-phone" type="tel" placeholder="+234(0) 567 8900" {...register('phone')} className={heroInput} />
+            </div>
+            {errors.phone && <p className="text-xs text-red-400/80 mt-1">{errors.phone.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="hero-company" className="text-xs font-medium text-white/50">
+              Company <span className="text-orange-400/80">*</span>
+            </Label>
             <div className="relative">
               <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20" />
               <Input id="hero-company" placeholder="Your company" {...register('company')} className={heroInput} />
             </div>
+            {errors.company && <p className="text-xs text-red-400/80 mt-1">{errors.company.message}</p>}
           </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-white/50">Interested in</Label>
-            <MultiSelect
-              selected={selectedModules}
-              onChange={handleModuleChange}
-              triggerClassName={heroTrigger}
-            />
-          </div>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs font-medium text-white/50">
+            Interested in <span className="text-orange-400/80">*</span>
+          </Label>
+          <MultiSelect
+            selected={selectedModules}
+            onChange={handleModuleChange}
+            triggerClassName={heroTrigger}
+          />
+          {errors.module && <p className="text-xs text-red-400/80 mt-1">{errors.module.message}</p>}
         </div>
         <Button
           type="submit"
@@ -328,20 +345,36 @@ export function WaitlistForm({ variant = 'hero', className = '' }: WaitlistFormP
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="sec-company" className="text-white/50 text-sm font-medium">Company</Label>
+            <Label htmlFor="sec-phone" className="text-white/50 text-sm font-medium">
+              Phone Number <span className="text-orange-400/80">*</span>
+            </Label>
+            <div className="relative">
+              <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20" />
+              <Input id="sec-phone" type="tel" placeholder="+234(0) 567 8900" {...register('phone')} className={sectionInput} />
+            </div>
+            {errors.phone && <p className="text-xs text-red-400/80">{errors.phone.message}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="sec-company" className="text-white/50 text-sm font-medium">
+              Company <span className="text-orange-400/80">*</span>
+            </Label>
             <div className="relative">
               <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-white/20" />
               <Input id="sec-company" placeholder="Your company" {...register('company')} className={sectionInput} />
             </div>
+            {errors.company && <p className="text-xs text-red-400/80">{errors.company.message}</p>}
           </div>
-          <div className="space-y-2">
-            <Label className="text-white/50 text-sm font-medium">Interested in</Label>
-            <MultiSelect
-              selected={selectedModules}
-              onChange={handleModuleChange}
-              triggerClassName={sectionTrigger}
-            />
-          </div>
+        </div>
+        <div className="space-y-2">
+          <Label className="text-white/50 text-sm font-medium">
+            Interested in <span className="text-orange-400/80">*</span>
+          </Label>
+          <MultiSelect
+            selected={selectedModules}
+            onChange={handleModuleChange}
+            triggerClassName={sectionTrigger}
+          />
+          {errors.module && <p className="text-xs text-red-400/80">{errors.module.message}</p>}
         </div>
         <Button
           type="submit"

@@ -5,7 +5,8 @@ import { z } from 'zod/v4';
 const waitlistSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
   email: z.email('Please enter a valid email address'),
-  company: z.string().optional(),
+  phone: z.string().min(1, 'Phone number is required'),
+  company: z.string().min(1, 'Company is required'),
   module: z.string().optional(),
 });
 
@@ -21,11 +22,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { fullName, email, company, module } = result.data;
+    const { fullName, email, phone, company, module } = result.data;
 
     const emailSent = await sendWaitlistNotification({
       fullName,
       email,
+      phone,
       company,
       module,
     });

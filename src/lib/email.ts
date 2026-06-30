@@ -24,6 +24,7 @@ function escapeHtml(value?: string) {
 export async function sendWaitlistNotification(payload: {
     fullName: string;
     email: string;
+    phone?: string;
     company?: string;
     module?: string;
 }) {
@@ -48,6 +49,7 @@ export async function sendWaitlistNotification(payload: {
         <h2>New Waitlist Signup</h2>
         <p><strong>Name:</strong> ${escapeHtml(payload.fullName)}</p>
         <p><strong>Email:</strong> ${escapeHtml(payload.email)}</p>
+        <p><strong>Phone:</strong> ${escapeHtml(payload.phone)}</p>
         <p><strong>Company:</strong> ${escapeHtml(payload.company)}</p>
         <p><strong>Module:</strong> ${escapeHtml(payload.module)}</p>
       `,
